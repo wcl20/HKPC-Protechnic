@@ -25,10 +25,3 @@ class URRobot:
         joint_radians = self.rtde_receive.getActualQ()
         joint_degrees = list(map(URRobot.rad2degree, joint_radians))
         return joint_degrees
-
-if __name__ == '__main__':
-    
-    ROBOT_IP  = "172.28.60.10"
-
-    robot = URRobot(ROBOT_IP)
-    print(robot.get_joint_degrees())

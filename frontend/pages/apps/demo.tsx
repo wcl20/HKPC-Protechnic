@@ -61,7 +61,7 @@ const DemoPage: NextPage = () => {
   const inspect = async (e) => {
     setLoading(true);
     try {
-      const res = await flaskInstance.get("/api/inspection");
+      const res = await flaskInstance.get("/api/inspection/ur5demo");
       setData(res.data.results);
     } catch(error) {
       setError(error.message);

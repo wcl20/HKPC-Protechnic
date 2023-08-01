@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 import os
 import sys
@@ -121,18 +120,3 @@ class VideoCapture:
             raise Exception("camera.py: Close Device Failed!")
         if self.camera.MV_CC_DestroyHandle() != 0:
             raise Exception("camera.py: Destroy Handle Failed")
-
-if __name__ == '__main__':
-
-    laptop_ip = "192.168.56.20"
-    camera_ip = "192.168.56.50"
-
-    capture = VideoCapture(network_ip=laptop_ip, camera_ip=camera_ip)
-
-    ret, frame = capture.read()
-    if not ret:
-        print(f"[ERROR] Image capture failed!")
-        sys.exit(1)
-
-    cv2.imshow("image", imutils.resize(frame, width=800))
-    cv2.waitKey(0)

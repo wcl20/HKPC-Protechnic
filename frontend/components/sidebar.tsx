@@ -14,7 +14,7 @@ import Toolbar from '@mui/material/Toolbar';
 // Icons
 import BrokenImageIcon from '@mui/icons-material/BrokenImage';
 import HomeIcon from '@mui/icons-material/Home';
-import LightModeIcon from '@mui/icons-material/LightMode';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 
 function LinkItem(props) {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function SideBar(props) {
       <Divider />
       <List subheader={<ListSubheader>APPS</ListSubheader>}>
         <LinkItem path="/apps/demo" label="Defect Inspection" icon={<BrokenImageIcon />} />
-        <LinkItem path="/apps/light" label="Light" icon={<LightModeIcon />} />
+        <LinkItem path="/apps/scan" label="3D Reconstruction" icon={<ViewInArIcon />} />
       </List>
     </Drawer>
   )
