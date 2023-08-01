@@ -6,20 +6,56 @@ from flask_cors import CORS
 from endpoints.aubogripper import Gripper
 from endpoints.auborobot import AuboRobot
 from endpoints.hikrobot import VideoCapture
+from endpoints.lights import Light
 
 app = Flask(__name__)
 CORS(app)
 
+def capture(lights, camera):
+    '''
+    Captures 4 images by switching on each light one by one.
+    Returns the average of the 4 images.
+    '''
+    # Switch on light 1
+    lights.on(0)
+    # Store list of images
+    frames = []
+    # Take first image
+    ret, frame = camera.read()
+    frames.append(frame)
+    # Take 2, 3, 4 image
+    terminals = range(4)
+    for current, next in zip(terminals, terminals[1:]):
+        lights.off(current)
+        lights.on(next)
+
+        ret, frame = camera.read()
+        frames.append(frame)
+    # Switch off light 4
+    lights.off(3)
+    # Create average image
+    avg_img = frames[0]
+    for i in range(1, len(frames)):
+        alpha = 1.0 / (i + 1)
+        avg_img = cv2.addWeighted(frames[i], alpha, avg_img, 1.0 - alpha, 0.0)
+
+    return avg_img
+
 @app.route('/api/inspection')
-def capture():
+def inspect():
 
     # Initialize gripper
     gripper = Gripper()
 
+    # Initialize Light control
+    lights_comport = "COM3"
+    lights_baudrate = 9600
+    lights = Light(lights_comport, lights_baudrate)
+
     # Initialize camera
     laptop_ip = "192.168.56.20"
     camera_ip = "192.168.56.50"
-    capture = VideoCapture(network_ip=laptop_ip, camera_ip=camera_ip)
+    camera = VideoCapture(network_ip=laptop_ip, camera_ip=camera_ip)
 
     # Initialize robot arm + vertical axis
     robot_ip = '192.168.56.10'
@@ -44,7 +80,7 @@ def capture():
     robot.move_vertical_axis("down")
 
     # Take image + save image
-    ret, frame = capture.read()
+    frame = capture(lights, camera)
     cv2.imwrite("static/image1.jpg", frame)
 
     # Move up vertical axis
@@ -62,7 +98,7 @@ def capture():
     robot.move_cartesian([-0.12, -0.6, 0.3], [88, 0, 0])
 
     # Take image + save image
-    ret, frame = capture.read()
+    frame = capture(lights, camera)
     cv2.imwrite("static/image2.jpg", frame)
 
     # Rotate wrist 6 to take remaining 4 images
@@ -75,7 +111,7 @@ def capture():
         robot.move_joint(joint_radians)
 
         # Take image + save image
-        ret, frame = capture.read()
+        frame = capture(lights, camera)
         cv2.imwrite(f"static/image{i + 3}.jpg", frame)
 
 
@@ -91,13 +127,13 @@ def capture():
     robot.move_cartesian([-0.12, -0.5, 0.1], [-179.9, 0, 0])
 
     # Disconnect devices
-    capture.release()
+    camera.release()
     robot.disconnect()
 
     # Return results
     return {
         "results": [
-            { 
+            {
                 "image": f"http://localhost:5000/static/image1.jpg",
                 "heatmap": f"http://localhost:5000/static/image1.jpg",
                 "error": True
